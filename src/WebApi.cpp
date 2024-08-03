@@ -25,7 +25,7 @@ void WebApiClass::init(Scheduler& scheduler)
     _webApiInverter.init(_server, scheduler);
     _webApiLimit.init(_server, scheduler);
     _webApiMaintenance.init(_server, scheduler);
-    _webApiMqtt.init(_server, scheduler);
+    //_webApiMqtt.init(_server, scheduler);
     _webApiNetwork.init(_server, scheduler);
     _webApiNtp.init(_server, scheduler);
     _webApiPower.init(_server, scheduler);
@@ -35,6 +35,7 @@ void WebApiClass::init(Scheduler& scheduler)
     _webApiWebapp.init(_server, scheduler);
     _webApiWsConsole.init(_server, scheduler);
     _webApiWsLive.init(_server, scheduler);
+    _SdStorageWebApi.init(_server, scheduler);
 
     _server.begin();
 }

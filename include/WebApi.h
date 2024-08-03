@@ -12,7 +12,7 @@
 #include "WebApi_inverter.h"
 #include "WebApi_limit.h"
 #include "WebApi_maintenance.h"
-#include "WebApi_mqtt.h"
+//#include "WebApi_mqtt.h"
 #include "WebApi_network.h"
 #include "WebApi_ntp.h"
 #include "WebApi_power.h"
@@ -25,6 +25,9 @@
 #include <AsyncJson.h>
 #include <ESPAsyncWebServer.h>
 #include <TaskSchedulerDeclarations.h>
+#include "SdStorageWebApi.h"
+
+#define MQTT_JSON_DOC_SIZE 10240
 
 class WebApiClass {
 public:
@@ -55,7 +58,7 @@ private:
     WebApiInverterClass _webApiInverter;
     WebApiLimitClass _webApiLimit;
     WebApiMaintenanceClass _webApiMaintenance;
-    WebApiMqttClass _webApiMqtt;
+    //WebApiMqttClass _webApiMqtt;
     WebApiNetworkClass _webApiNetwork;
     WebApiNtpClass _webApiNtp;
     WebApiPowerClass _webApiPower;
@@ -65,6 +68,7 @@ private:
     WebApiWebappClass _webApiWebapp;
     WebApiWsConsoleClass _webApiWsConsole;
     WebApiWsLiveClass _webApiWsLive;
+    SdStorageWebApiClass _SdStorageWebApi;
 };
 
 extern WebApiClass WebApi;

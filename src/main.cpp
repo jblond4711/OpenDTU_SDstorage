@@ -8,11 +8,11 @@
 #include "InverterSettings.h"
 #include "Led_Single.h"
 #include "MessageOutput.h"
-#include "MqttHandleDtu.h"
-#include "MqttHandleHass.h"
-#include "MqttHandleInverter.h"
-#include "MqttHandleInverterTotal.h"
-#include "MqttSettings.h"
+// #include "MqttHandleDtu.h"
+// #include "MqttHandleHass.h"
+// #include "MqttHandleInverter.h"
+// #include "MqttHandleInverterTotal.h"
+// #include "MqttSettings.h"
 #include "NetworkSettings.h"
 #include "NtpSettings.h"
 #include "PinMapping.h"
@@ -25,6 +25,7 @@
 #include <LittleFS.h>
 #include <TaskScheduler.h>
 #include <esp_heap_caps.h>
+#include "SdStorage.h"
 
 void setup()
 {
@@ -103,11 +104,11 @@ void setup()
 
     // Initialize MqTT
     MessageOutput.print("Initialize MqTT... ");
-    MqttSettings.init();
-    MqttHandleDtu.init(scheduler);
-    MqttHandleInverter.init(scheduler);
-    MqttHandleInverterTotal.init(scheduler);
-    MqttHandleHass.init(scheduler);
+    // MqttSettings.init();
+    // MqttHandleDtu.init(scheduler);
+    // MqttHandleInverter.init(scheduler);
+    // MqttHandleInverterTotal.init(scheduler);
+    // MqttHandleHass.init(scheduler);
     MessageOutput.println("done");
 
     // Initialize WebApi
@@ -154,6 +155,8 @@ void setup()
     InverterSettings.init(scheduler);
 
     Datastore.init(scheduler);
+
+    SdStorage.init(scheduler);
 }
 
 void loop()
