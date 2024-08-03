@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <style>
+    body {
+      min-width: 310px;
+    	max-width: 800px;
+      margin: 0 auto;
+	  font-family: "Gill Sans", sans-serif;
+    }
+    h2 {
+      font-size: 3.0rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="total_yield">Total yield: No data</div>
+  <div id="yield_day">Total yield day: No data</div>
+  <div id="power">Power: No data</div>
+  <div id="chart_solarPower" class="container"></div>
+  <div id="chart_solarDays" class="container"></div>
+  <div id="chart_solarMonths" class="container"></div>
+</body>
+<script>
+Highcharts.setOptions({
+    time: {
+        timezone: 'Europe/Berlin'
+    }
+});
+
+var chartSolarPower = new Highcharts.Chart({
+  chart:{ renderTo : 'chart_solarPower', type: 'areaspline' },
+  title: { text: 'Solar Power' },
+  series: [{
+    showInLegend: false,
+    data: []
+  }],
+  plotOptions: {
+    line: { animation: false,
+      dataLabels: { enabled: true, pointFormat: '<b>{point.y:.1f} Wh</b><br/>' }
+    },
+    series: { color: 'orange' }
+  },
+  xAxis: { type: 'datetime',
+    dateTimeLabelFormats: { second: '%H:%M:%S' }
+  },
+  yAxis: {
+    title: { text: 'Yield (Wh)' }
+  },
+  tooltip: {
+    pointFormat: '<b>{point.y:.0f}</b><br/>',
+    shared: false
+  },
+  credits: { enabled: false }
+});
+
+var chartSolarDays = new Highcharts.Chart({
+  chart:{ renderTo : 'chart_solarDays', type: 'column' },
+  title: { text: 'Solar Days' },
+  series: [{
+    showInLegend: false,
+    data: []
+  }],
+  plotOptions: {
+    line: { animation: false,
+      dataLabels: { enabled: true, pointFormat: '<b>{point.y:.1f}</b><br/>' }
+    },
+    series: { color: 'orange' }
+  },
+  xAxis: { type: 'datetime',
+    dateTimeLabelFormats: { second: '%H:%M:%S' }
+  },
+  yAxis: {
+    title: { text: 'Yield (Wh)' },
+	plotLines: [{
+	color: 'red',
+	value: '0',
+	width: '1',
+	zIndex: 4,
+	label: {
+		text: 'Average: 0 Wh'
+	}
+	}]
+  },
+  tooltip: {
+    pointFormat: '<b>{point.y:.0f} Wh</b><br/>',
+	xDateFormat: '%d.%m.%y, %A',
+    shared: false
+  },
+  credits: { enabled: false }
+});
+
+var chartSolarMonths = new Highcharts.Chart({
+  chart:{ renderTo : 'chart_solarMonths', type: 'column' },
+  title: { text: 'Solar Months' },
+  series: [{
+    showInLegend: false,
+    data: []
+  }],
+  plotOptions: {
+    line: { animation: false,
+      dataLabels: { enabled: true, pointFormat: '<b>{point.y:.1f}</b><br/>' }
+    },
+    series: { color: 'orange' }
+  },
+  xAxis: { type: 'datetime',
+    dateTimeLabelFormats: { month: '%b' }
+  },
+  yAxis: {
+    title: { text: 'Yield (Wh)' }
+  },
+  tooltip: {
+    pointFormat: '<b>{point.y:.0f} Wh</b><br/>',
+	xDateFormat: '%b %y',
+    shared: false
+  },
+  credits: { enabled: false }
+});
+
+async function getDBData() {
+	try{
+		var timestamp = (!chartSolarPower.series[0].options.data.length) ? 0 : (chartSolarPower.series[0].options.data[chartSolarPower.series[0].options.data.length-1].x) * 0.001 - 1;
+		const resp = await fetch("/db/getdbdata?timestamp="+timestamp);
+		const respArray = await resp.json();
+		console.log(respArray);
+		var dropFirst = false;
+		for (dataArray of respArray) {
+			var ts = dataArray[0]*1000;
+			if(chartSolarPower.series[0].options.data.length > 0 && chartSolarPower.series[0].options.data[chartSolarPower.series[0].options.data.length-1].x == ts){
+				chartSolarPower.series[0].data[chartSolarPower.series[0].data.length-1].update(dataArray[1]);
+			}else{
+				dropFirst = chartSolarPower.series[0].data.length > 49;
+				chartSolarPower.series[0].addPoint({
+					x: ts,
+					y: dataArray[1]
+				},false, dropFirst);
+			}
+		}
+		chartSolarPower.redraw();
+	
+	} catch (error) {
+		console.error(error);
+	}
+	
+	setTimeout(getDBData, 30000);
+}
+
+getDBData();
+
+async function getDayData() {
+	try{
+		const resp = await fetch("/db/getdaydata?timestamp=");
+		const respArray = await resp.json();
+		console.log(respArray);
+		var dropFirst = false;
+		var dataSum = 0;
+		for (dataArray of respArray) {
+			var ts = dataArray[0]*1000;
+				chartSolarDays.series[0].addPoint({
+					x: ts,
+					y: dataArray[1]
+				},false, false);
+			dataSum += dataArray[1];
+		}
+		var dataAverage = dataSum / respArray.length;
+		dataAverage = Math.round(dataAverage);
+		chartSolarDays.yAxis[0].options.plotLines[0].value = dataAverage;
+		chartSolarDays.yAxis[0].options.plotLines[0].label.text = "Average: " + dataAverage;
+		
+		chartSolarDays.redraw();
+	
+	} catch (error) {
+		console.error(error);
+	}
+	
+}
+
+getDayData();
+
+async function getMonthData() {
+	try{
+		const resp = await fetch("/db/getmonthdata?timestamp=");
+		const respArray = await resp.json();
+		console.log(respArray);
+		var dropFirst = false;
+		for (dataArray of respArray) {
+			var ts = dataArray[0]*1000;
+				chartSolarMonths.series[0].addPoint({
+					x: ts,
+					y: dataArray[1]
+				},false, false);
+		}
+		chartSolarMonths.redraw();
+	
+	} catch (error) {
+		console.error(error);
+	}
+	
+}
+
+getMonthData();
+
+var statusDataObj;
+
+async function getLiveData() {
+	try{
+		const resp = await fetch("/db/getyield");
+		const respData = await resp.json();
+		statusDataObj = respData;
+
+		let power = respData.Power.v;
+		let yieldTotal = respData.YieldTotal.v;
+		let yieldDay = respData.YieldDay.v;
+		if(!isNaN(power))
+			document.getElementById("power").innerHTML = "Power: " + power.toFixed(1) + " " + respData.Power.u;
+		if(!isNaN(yieldTotal))
+			document.getElementById("total_yield").innerHTML = "Total yield: " + yieldTotal.toFixed(3) + " " + respData.YieldTotal.u;
+		if(!isNaN(yieldDay))
+			document.getElementById("yield_day").innerHTML = "Yield Day: " + yieldDay + " " + respData.YieldDay.u;
+
+		console.log(respData);
+	
+	} catch (error) {
+		console.error(error);
+	}
+	
+	setTimeout(getLiveData, 11000);
+}
+setTimeout(getLiveData, 1000);
+</script>
+</html>
