@@ -13,7 +13,7 @@
 
 
 #define SD_SCK  GPIO_NUM_14
-#define SD_MISO GPIO_NUM_33
+#define SD_MISO GPIO_NUM_12
 #define SD_MOSI GPIO_NUM_13
 #define SD_SS   GPIO_NUM_15
 
