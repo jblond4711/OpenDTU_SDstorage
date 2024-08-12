@@ -12,10 +12,10 @@
 #include "SdStorageData.h"
 
 
-#define SD_SCK  GPIO_NUM_14
-#define SD_MISO GPIO_NUM_12
-#define SD_MOSI GPIO_NUM_13
-#define SD_SS   GPIO_NUM_15
+#define SD_SCK  GPIO_NUM_18
+#define SD_MISO GPIO_NUM_19
+#define SD_MOSI GPIO_NUM_23
+#define SD_SS   GPIO_NUM_5
 
 class SdStorageClass {
 public:
